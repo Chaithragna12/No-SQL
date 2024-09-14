@@ -1,0 +1,28 @@
+db.Students.insertMany([{StudentID:1,FirstName:"Chaithragna", LastName:"Aveti",Major:"Maths"},{StudentID:2,FirstName:"RanjithKumar", LastName:"Komari",Major:"Sanskrit"},{StudentID:3,FirstName:"chaithranji", LastName:"Komari",Major:"Sanskrit"}])
+
+
+db.Courses.insertMany([{ CourseID: "C001", CourseName: "Introduction to Computer Science", Credits: 3 },{ CourseID: "C002", CourseName: "Advanced Mathematics", Credits: 4 },{ CourseID: "C003", CourseName: "Physics Fundamentals", Credits: 3 }]);
+
+db.Enrollments.insertMany([{ StudentID: 1, CourseID: "C001", EnrollmentDate: new Date("2024-01-15") },{ StudentID: 2, CourseID: "C002", EnrollmentDate: new Date("2024-01-20") },{ StudentID: 3, CourseID: "C003", EnrollmentDate: new Date("2024-02-01") }]);
+
+
+
+db.Enrollments.aggregate([{ $match: { CourseID: "C001" } }, {$lookup: {from: "Students",localField: "StudentID",foreignField: "StudentID",as: "studentDetails"}},{ $unwind: "$studentDetails" },{$project: {_id: 0,StudentID: "$studentDetails.StudentID",FirstName: "$studentDetails.FirstName",LastName: "$studentDetails.LastName",Major: "$studentDetails.Major"}}])
+
+
+db.Students.updateOne({ StudentID: 1 },{ $set: { Major: "Data Science" } })
+
+db.Students.deleteMany({ Graduated: true });
+
+db.Enrollments.aggregate([{ $match: { CourseID: "C002" } }, {$lookup: {from: "Students",localField: "StudentID",foreignField: "StudentID",as: "studentDetails"}},{ $unwind: "$studentDetails" },{$project: {_id: 0,StudentID: "$studentDetails.StudentID",FirstName: "$studentDetails.FirstName",LastName: "$studentDetails.LastName",Major: "$studentDetails.Major"}}])
+
+
+db.Enrollments.aggregate([{ $match: { $or: [{ CourseID: "C001" }, { CourseID: "C002" }] } },{$group: {_id: "$StudentID",courses: { $addToSet: "$CourseID" }}},{ $match: { courses: { $all: ["C001", "C002"] } } },  {$lookup: {from: "Students",localField: "_id",foreignField: "StudentID",as: "studentDetails"}},{ $unwind: "$studentDetails" },{$project: {_id: 0,StudentID: "$studentDetails.StudentID",FirstName: "$studentDetails.FirstName",LastName: "$studentDetails.LastName",Major: "$studentDetails.Major"}}])
+
+db.Students.find().sort({ LastName: 1 });
+
+
+db.Students.aggregate([{ $count: "totalStudents" }])
+
+
+db.Students.aggregate([{$lookup: {from: "Enrollments",localField: "StudentID",foreignField: "StudentID",as: "enrollments"}},{$group: {_id: "$Major",averageEnrollment: { $avg: { $size: "$enrollments" } }}}])

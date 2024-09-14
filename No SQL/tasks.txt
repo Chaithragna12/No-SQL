@@ -1,0 +1,54 @@
+1. Creating Collections
+    (i) db.Employees.insertOne({EmployeeID:1,FirstName:"Chaithragna",LastName:"Aveti",DateOfBirth:new Date("12-11-2005"),Department:"HR"})
+    (ii)db.Orders.insertOne({OrderID:1,OrderDate:new Date ("18-09-2024"),CustomerID:1234,Amount:409})
+
+2. Inserting Data into Collections
+    (i)db.Employees.insertOne({EmployeeID: 1, FirstName: 'Alice', LastName: 'Johnson', DateOfBirth: '1990-01-15',Department: 'HR' })
+    (ii)db.Orders.insertMany([{OrderID:2,OrderDate:new Date ("19-09-2024"),CustomerID:124,Amount:499},{OrderID:3,OrderDate:new Date ("20-09-2024"),CustomerID:234,Amount:509},{OrderID:4,OrderDate:new Date ("11-09-2024"),CustomerID:124,Amount:109}])
+
+3. Selecting Data from Collections
+    (i)db.Employees.find()
+    (ii)db.Orders.find()
+    (iii)db.Employees.find({},{FirstName:1,LastName:1,_id:0})
+    (iv)db.Orders.find({},{ OrderID:1,Amount:1,_id:0})
+
+4. Updating Data in a Collection
+    (i)db.Employees.updateOne({EmployeeID:1},{$set:{Department:'Finance'}})
+    (ii)db.Orders.updateOne({OrderID:2},{$set:{Amount:500.00}})
+
+5. Deleting Data from a Collection
+    (i)db.Employees.deleteOne({EmployeeID:1})
+    (ii)db.Orders.deleteOne({Amount:{$lt:100}})
+
+6. Filtering Data with WHERE Clause
+    (i)db.Employees.find({Department:'HR'})
+    (ii)db.Orders.find({Amount:{$gt:300}})
+
+7. Using AND / OR in Queries
+    (i)db.Employees.find({$and:[{Department:'HR'},{DateOfBirth:{$gt:'1990-01-01'}}]})
+    (ii)db.Orders.find({$and:[{Amount:{$gt:300}},{OrderDate:{$lt:'2023-01-01'}}]})
+    (iii)db.Employees.find({$or:[{Department:'HR'},{Department:'Finance'}]})
+    (iv)db.Orders.find({$or:[{Amount:{$lt:100}},{OrderDate:{$gt:'2023-01-01'}}]})
+
+8. Sorting Results with ORDER BY
+    (i)db.Employees.find().sort({LastName:1})
+    (ii)db.Orders.find().sort({Amount:-1})
+
+9. Using Aggregate Functions
+    (i)db.Employees.countDocuments()
+    (ii)db.Orders.countDocuments()
+    (iii)db.Orders.aggregate([{$group:{_id:null,averageAmount:{$avg:'$Amount'}}}])
+    (iv)db.Employees.aggregate([{$addFields:{DateOfBirthConverted:{$dateFromString:{dateString:'$DateOfBirth'}}}},{$addFields:{age:{$subtract:[{$year:new Date()},{$year:'$DateOfBirthConverted'}]}}},{$group:{_id:null,averageAge:{$avg:'$age'}}}])
+
+10. Grouping Data with GROUP BY
+    (i)db.Employees.aggregate([{$group:{_id:'Department',employeecount:{$sum:1}}}])
+    (ii)db.Orders.aggregate([{$group:{_id:'CustomerID',totalamount:{$sum:'$Amount'}}}])
+
+11. Using HAVING Clause
+    (i)db.Employees.aggregate([{$group: {_id: "$Department",  employeeCount: { $sum: 1 }  }},{$match: {employeeCount: { $gt: 5 }  }}])
+    (ii)db.Orders.aggregate([{$group: {_id: "$CustomerID",  totalamount: { $sum: "$Amount"  }  }},{$match: {totalamount: { $gt: 1000 }}}])
+
+
+12. Joining Collections
+    (i)db.Employees.aggregate([{$lookup: {from: "Orders",  localField: "EmployeeID",  foreignField: "CustomerID",  as: "orderDetails"  }},{$unwind: "$orderDetails" },{$project: {_id: 0,  FirstName: 1, LastName: 1,  Amount: "$orderDetails.Amount" }}])
+    (ii)db.Employees.aggregate([{$lookup: {from: "Orders", localField: "EmployeeID",  foreignField: "CustomerID",  as: "orderDetails"  }},{$unwind: {path: "$orderDetails",  preserveNullAndEmptyArrays: true  }},{$project: {_id: 0,  FirstName: 1, LastName: 1,  Amount: "$orderDetails.Amount"  }}])
